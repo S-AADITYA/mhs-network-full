@@ -1,6 +1,5 @@
-import { createAdminClient } from "@/lib/supabase/admin";
+import { T, hasSupabase } from "@/lib/supabase/env";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { hasServiceSupabase } from "@/lib/supabase/env";
 import type { Lead } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -27,20 +26,20 @@ function cell(value: unknown): string {
 }
 
 export async function GET() {
-  if (!hasServiceSupabase()) {
+  if (!hasSupabase()) {
     return new Response("Not configured", { status: 503 });
   }
 
-  // The export bypasses RLS, so it must be gated on a signed-in admin.
+  // Reads run as the signed-in user; RLS returns nothing without a session,
+  // but fail closed here too rather than serving an empty CSV to a stranger.
   const supabase = await createServerSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
-  const db = createAdminClient();
-  const { data, error } = await db
-    .from("leads")
+  const { data, error } = await supabase
+    .from(T.leads)
     .select("*")
     .order("created_at", { ascending: false })
     .limit(10000);

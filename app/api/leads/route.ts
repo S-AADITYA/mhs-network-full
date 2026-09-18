@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { hasServiceSupabase } from "@/lib/supabase/env";
+import { hasSupabase } from "@/lib/supabase/env";
+import { createPublicClient } from "@/lib/supabase/public";
 
 export const runtime = "nodejs";
 
@@ -11,8 +11,8 @@ const MAX = 2000;
 const MIN_FILL_MS = 2500;
 
 /** Per-IP rate limit. In-memory, so it is per instance — it blunts a flood
- *  rather than replacing a real WAF, which is the right trade for a form that
- *  a human submits once. */
+ *  rather than replacing a real WAF, which is the right trade for a form a
+ *  human submits once. */
 const WINDOW_MS = 60_000;
 const MAX_PER_WINDOW = 5;
 const hits = new Map<string, number[]>();
@@ -23,7 +23,6 @@ function rateLimited(ip: string): boolean {
   recent.push(now);
   hits.set(ip, recent);
 
-  // Keep the map from growing without bound on a long-lived instance.
   if (hits.size > 5000) {
     for (const [key, times] of hits) {
       if (times.every((t) => now - t >= WINDOW_MS)) hits.delete(key);
@@ -42,7 +41,7 @@ function clientIp(request: Request): string {
 }
 
 export async function POST(request: Request) {
-  if (!hasServiceSupabase()) {
+  if (!hasSupabase()) {
     return NextResponse.json(
       { error: "Lead capture is not configured yet." },
       { status: 503 },
@@ -101,19 +100,21 @@ export async function POST(request: Request) {
   }
 
   try {
-    const db = createAdminClient();
-    const { error } = await db.from("leads").insert({
-      brand: clean(body.brand),
-      service: clean(body.service),
-      city: clean(body.city),
-      source_url: clean(body.source_url) || null,
-      name,
-      phone,
-      message: message || null,
+    // Goes through the SECURITY DEFINER function: the anon role has no rights
+    // on the leads table itself, so a lead can be created but never read back.
+    const db = createPublicClient();
+    const { error } = await db.rpc("mhs_submit_lead", {
+      p_brand: clean(body.brand),
+      p_service: clean(body.service),
+      p_city: clean(body.city),
+      p_name: name,
+      p_phone: phone,
+      p_message: message || null,
+      p_source_url: clean(body.source_url) || null,
     });
     if (error) throw new Error(error.message);
   } catch (err) {
-    console.error("Lead insert failed:", err);
+    console.error("Lead submit failed:", err);
     return NextResponse.json(
       { error: "Could not save that. Please call us instead." },
       { status: 502 },

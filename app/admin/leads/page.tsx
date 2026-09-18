@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { deleteLead, updateLeadStatus } from "../actions";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { hasServiceSupabase } from "@/lib/supabase/env";
+import { T, hasSupabase } from "@/lib/supabase/env";
+import { createServerSupabase } from "@/lib/supabase/server";
 import type { Lead } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ export default async function LeadsPage({
   const q = (sp.q ?? "").trim();
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
 
-  if (!hasServiceSupabase()) {
+  if (!hasSupabase()) {
     return (
       <>
         <h1 style={{ fontSize: "1.5rem" }}>Leads</h1>
@@ -32,9 +32,9 @@ export default async function LeadsPage({
     );
   }
 
-  const db = createAdminClient();
+  const db = await createServerSupabase();
   let query = db
-    .from("leads")
+    .from(T.leads)
     .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);

@@ -1,10 +1,10 @@
 import "server-only";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { hasServiceSupabase } from "@/lib/supabase/env";
+import { T, hasSupabase } from "@/lib/supabase/env";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { Brand, City, Faq, Network, Niche, Service } from "@/lib/types";
 
 export function supabaseDataConfigured(): boolean {
-  return hasServiceSupabase() && process.env.CONTENT_SOURCE !== "config";
+  return hasSupabase() && process.env.CONTENT_SOURCE !== "config";
 }
 
 interface Row {
@@ -51,7 +51,7 @@ interface NicheRow extends Row {
   line: string;
 }
 
-/** jsonb columns come back as unknown; coerce them to the shapes pages expect. */
+/** jsonb columns arrive as unknown; coerce them to the shapes pages expect. */
 function toStrings(value: unknown): string[] {
   return Array.isArray(value) ? value.map((v) => String(v)) : [];
 }
@@ -64,7 +64,6 @@ function toFaqs(value: unknown): Faq[] {
     .filter((f) => f.q && f.a);
 }
 
-/** Groups child rows by their brand so each brand is assembled in one pass. */
 function groupByBrand<T extends Row>(rows: T[] | null): Map<string, T[]> {
   const map = new Map<string, T[]>();
   for (const row of rows ?? []) {
@@ -77,13 +76,13 @@ function groupByBrand<T extends Row>(rows: T[] | null): Map<string, T[]> {
 
 /** Pulls the whole content tree in four queries rather than one per brand. */
 export async function loadFromSupabase(): Promise<Network> {
-  const db = createAdminClient();
+  const db = createPublicClient();
 
   const [brands, services, cities, niches] = await Promise.all([
-    db.from("brands").select("*").order("position"),
-    db.from("services").select("*").order("position"),
-    db.from("cities").select("*").order("position"),
-    db.from("niches").select("*").order("position"),
+    db.from(T.brands).select("*").order("position"),
+    db.from(T.services).select("*").order("position"),
+    db.from(T.cities).select("*").order("position"),
+    db.from(T.niches).select("*").order("position"),
   ]);
 
   for (const result of [brands, services, cities, niches]) {

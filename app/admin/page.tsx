@@ -1,21 +1,21 @@
 import Link from "next/link";
 import { getNetwork, supabaseDataConfigured } from "@/lib/data";
 import { brandCombos } from "@/lib/data/combos";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { hasServiceSupabase } from "@/lib/supabase/env";
+import { T, hasSupabase } from "@/lib/supabase/env";
+import { createServerSupabase } from "@/lib/supabase/server";
 import type { Lead } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 async function leadStats() {
-  if (!hasServiceSupabase()) return null;
-  const db = createAdminClient();
+  if (!hasSupabase()) return null;
+  const db = await createServerSupabase();
   const since = new Date(Date.now() - 7 * 864e5).toISOString();
   const [total, recent, fresh, latest] = await Promise.all([
-    db.from("leads").select("*", { count: "exact", head: true }),
-    db.from("leads").select("*", { count: "exact", head: true }).gte("created_at", since),
-    db.from("leads").select("*", { count: "exact", head: true }).eq("status", "new"),
-    db.from("leads").select("*").order("created_at", { ascending: false }).limit(5),
+    db.from(T.leads).select("*", { count: "exact", head: true }),
+    db.from(T.leads).select("*", { count: "exact", head: true }).gte("created_at", since),
+    db.from(T.leads).select("*", { count: "exact", head: true }).eq("status", "new"),
+    db.from(T.leads).select("*").order("created_at", { ascending: false }).limit(5),
   ]);
   return {
     total: total.count ?? 0,

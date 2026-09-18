@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { T } from "@/lib/supabase/env";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export interface ActionResult {
@@ -10,39 +10,39 @@ export interface ActionResult {
 }
 
 /**
- * Every write below runs with the service key, which bypasses RLS, so each one
- * must first prove there is a signed-in admin behind the request.
+ * Returns a client carrying the caller's session, after confirming there is
+ * one. Writes then run as that user, so the RLS policies — not this code — are
+ * what actually authorise them.
  */
-async function requireUser() {
+async function requireDb() {
   const supabase = await createServerSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Not signed in");
-  return user;
+  // Returned client carries the session, so RLS enforces the permission for us.
+  return supabase;
 }
 
 const STATUSES = ["new", "contacted", "qualified", "won", "lost"];
 
 export async function updateLeadStatus(formData: FormData): Promise<void> {
-  await requireUser();
+  const db = await requireDb();
   const id = Number(formData.get("id"));
   const status = String(formData.get("status") ?? "");
   if (!Number.isFinite(id) || !STATUSES.includes(status)) return;
 
-  const db = createAdminClient();
-  await db.from("leads").update({ status }).eq("id", id);
+  await db.from(T.leads).update({ status }).eq("id", id);
   revalidatePath("/admin/leads");
   revalidatePath("/admin");
 }
 
 export async function deleteLead(formData: FormData): Promise<void> {
-  await requireUser();
+  const db = await requireDb();
   const id = Number(formData.get("id"));
   if (!Number.isFinite(id)) return;
 
-  const db = createAdminClient();
-  await db.from("leads").delete().eq("id", id);
+  await db.from(T.leads).delete().eq("id", id);
   revalidatePath("/admin/leads");
   revalidatePath("/admin");
 }
@@ -74,7 +74,7 @@ export async function saveService(
   formData: FormData,
 ): Promise<ActionResult> {
   try {
-    await requireUser();
+    const db = await requireDb();
     const brandKey = String(formData.get("brand_key") ?? "");
     const name = String(formData.get("name") ?? "").trim();
     if (!brandKey || !name) return { ok: false, message: "Name is required." };
@@ -107,9 +107,8 @@ export async function saveService(
       position: Number(formData.get("position") ?? 0) || 0,
     };
 
-    const db = createAdminClient();
     const { error } = await db
-      .from("services")
+      .from(T.services)
       .upsert(row, { onConflict: "brand_key,slug" });
     if (error) return { ok: false, message: error.message };
 
@@ -125,7 +124,7 @@ export async function saveCity(
   formData: FormData,
 ): Promise<ActionResult> {
   try {
-    await requireUser();
+    const db = await requireDb();
     const brandKey = String(formData.get("brand_key") ?? "");
     const name = String(formData.get("name") ?? "").trim();
     if (!brandKey || !name) return { ok: false, message: "Name is required." };
@@ -142,9 +141,8 @@ export async function saveCity(
       position: Number(formData.get("position") ?? 0) || 0,
     };
 
-    const db = createAdminClient();
     const { error } = await db
-      .from("cities")
+      .from(T.cities)
       .upsert(row, { onConflict: "brand_key,slug" });
     if (error) return { ok: false, message: error.message };
 
@@ -160,7 +158,7 @@ export async function saveNiche(
   formData: FormData,
 ): Promise<ActionResult> {
   try {
-    await requireUser();
+    const db = await requireDb();
     const brandKey = String(formData.get("brand_key") ?? "");
     const name = String(formData.get("name") ?? "").trim();
     if (!brandKey || !name) return { ok: false, message: "Name is required." };
@@ -173,9 +171,8 @@ export async function saveNiche(
       position: Number(formData.get("position") ?? 0) || 0,
     };
 
-    const db = createAdminClient();
     const { error } = await db
-      .from("niches")
+      .from(T.niches)
       .upsert(row, { onConflict: "brand_key,slug" });
     if (error) return { ok: false, message: error.message };
 
@@ -187,13 +184,17 @@ export async function saveNiche(
 }
 
 export async function deleteRow(formData: FormData): Promise<void> {
-  await requireUser();
+  const db = await requireDb();
   const table = String(formData.get("table") ?? "");
   const brandKey = String(formData.get("brand_key") ?? "");
   const slug = String(formData.get("slug") ?? "");
-  if (!["services", "cities", "niches"].includes(table) || !brandKey || !slug) return;
+  const allowed: Record<string, string> = {
+    services: T.services,
+    cities: T.cities,
+    niches: T.niches,
+  };
+  if (!allowed[table] || !brandKey || !slug) return;
 
-  const db = createAdminClient();
-  await db.from(table).delete().eq("brand_key", brandKey).eq("slug", slug);
+  await db.from(allowed[table]).delete().eq("brand_key", brandKey).eq("slug", slug);
   revalidateBrand(brandKey);
 }
