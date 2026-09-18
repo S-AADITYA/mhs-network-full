@@ -5,6 +5,7 @@ import { GlowGrid, Reveal } from "@/components/Motion";
 import { getBrand, getBrands } from "@/lib/data";
 import { brandCombos, comboSlug, usesNiche } from "@/lib/data/combos";
 import { brandUrl } from "@/lib/site";
+import { ogImage } from "@/lib/og";
 
 export const revalidate = 3600;
 
@@ -24,7 +25,18 @@ export async function generateMetadata({
     title,
     description: `${brand.tagline}. ${brand.services.length} services across ${brand.cities.length} locations.`,
     alternates: { canonical: brandUrl(brand.key) },
-    openGraph: { title, url: brandUrl(brand.key) },
+    openGraph: {
+      title,
+      url: brandUrl(brand.key),
+      images: [
+        ogImage({
+          title: brand.name,
+          eyebrow: brand.tagline,
+          brand: brand.name,
+          accent: brand.accent,
+        }),
+      ],
+    },
   };
 }
 

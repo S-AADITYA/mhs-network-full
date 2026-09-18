@@ -1,4 +1,5 @@
 import Link from "next/link";
+import MobileNav from "@/components/MobileNav";
 import { Aurora, GlowGrid, Reveal } from "@/components/Motion";
 import { brandStyle } from "@/lib/color";
 import { getNetwork } from "@/lib/data";
@@ -16,6 +17,9 @@ export default async function NetworkHome() {
   return (
     <>
       <Aurora />
+      <a className="skip" href="#main">
+        Skip to content
+      </a>
 
       <header className="top">
         <div className="bar">
@@ -23,20 +27,26 @@ export default async function NetworkHome() {
             <span className="chip">M</span>
             {net.network_name}
           </span>
-          <nav className="navlinks">
+          <nav className="navlinks" aria-label="Brands">
             {net.brands.map((b) => (
               <Link key={b.key} href={`/${b.key}/`}>
                 {b.name}
               </Link>
             ))}
           </nav>
-          <Link className="btn ghost sm" href="/admin/">
+          <Link className="btn ghost sm callcta" href="/admin/">
             Admin
           </Link>
+          <MobileNav
+            links={[
+              ...net.brands.map((b) => ({ href: `/${b.key}/`, label: b.name })),
+              { href: "/admin/", label: "Admin" },
+            ]}
+          />
         </div>
       </header>
 
-      <main className="wrap">
+      <main className="wrap" id="main">
         <div className="hero">
           <div className="halo" />
           <Reveal>

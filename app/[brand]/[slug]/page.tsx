@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import LeadForm from "@/components/LeadForm";
 import { GlowGrid, Reveal } from "@/components/Motion";
 import { getBrand, getBrands } from "@/lib/data";
 import { brandCombos, comboSlug, findCombo, usesNiche } from "@/lib/data/combos";
 import { cityContext } from "@/lib/data/city-context";
 import { pageUrl } from "@/lib/site";
+import { ogImage } from "@/lib/og";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -48,11 +50,19 @@ export async function generateMetadata({
   const description = describe(service, city, niche ? ` ${niche.line}` : "");
   const url = pageUrl(brand.key, slug);
 
+  const image = ogImage({
+    title: `${service.name}${niche ? ` for ${niche.name}` : ""} in ${city.name}`,
+    eyebrow: `${city.name} · ${city.region}`,
+    brand: brand.name,
+    accent: brand.accent,
+  });
+
   return {
     title,
     description,
     alternates: { canonical: url },
-    openGraph: { title, description, url, type: "website" },
+    openGraph: { title, description, url, type: "website", images: [image] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 
@@ -99,6 +109,13 @@ export default async function ComboPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceLd) }}
+      />
+      <Breadcrumbs
+        crumbs={[
+          { href: `/${brand.key}/`, label: brand.name },
+          { href: `/${brand.key}/services/`, label: service.name },
+          { label: city.name },
+        ]}
       />
       {faqLd ? (
         <script

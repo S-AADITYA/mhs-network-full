@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { GlowGrid, Reveal } from "@/components/Motion";
 import { getBrand, getBrands } from "@/lib/data";
 import { comboSlug, usesNiche } from "@/lib/data/combos";
@@ -39,6 +40,12 @@ export default async function CitiesHub({
 
   return (
     <main className="wrap">
+      <Breadcrumbs
+        crumbs={[
+          { href: `/${brand.key}/`, label: brand.name },
+          { label: "Locations" },
+        ]}
+      />
       <div className="hero">
         <div className="halo" />
         <Reveal>
