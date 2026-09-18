@@ -1,0 +1,6 @@
+{
+  "buildCommand": "python generate.py",
+  "outputDirectory": "output",
+  "cleanUrls": true,
+  "trailingSlash": true
+}

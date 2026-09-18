@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://thepowerfulkitchen.com/sitemap.xml
