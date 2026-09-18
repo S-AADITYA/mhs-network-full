@@ -1,0 +1,89 @@
+/* Admin surfaces. Inherits the tokens from globals.css and stays on a calmer,
+   flatter treatment than the marketing pages — this is a working tool. */
+
+.admin { --accent: #5b8cff; --accent-2: #8b7bff; min-height: 100vh; }
+.admin main { padding: 34px 0 70px; }
+
+.adminnav { display: flex; gap: 24px; font-size: .92rem; flex: 1; }
+.adminnav a { color: var(--ink2); transition: color .2s var(--ease); }
+.adminnav a:hover { color: var(--ink); }
+.who { font-size: .84rem; color: var(--ink3); white-space: nowrap; }
+
+.stats {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  margin: 0 0 32px; padding: 0; list-style: none;
+}
+.stat {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 18px 20px; backdrop-filter: blur(14px);
+}
+.stat b {
+  display: block; font-family: var(--font-display), sans-serif;
+  font-size: 1.85rem; font-weight: 700; letter-spacing: -.03em; line-height: 1.15;
+  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.stat span { color: var(--ink3); font-size: .8rem; letter-spacing: .05em; text-transform: uppercase; }
+
+table.grid2 {
+  width: 100%; border-collapse: collapse;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); overflow: hidden;
+}
+table.grid2 th, table.grid2 td {
+  text-align: left; padding: 13px 16px;
+  border-bottom: 1px solid var(--line); font-size: .9rem; vertical-align: top;
+}
+table.grid2 th {
+  background: rgba(255,255,255,.04);
+  font-size: .74rem; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--ink3); font-weight: 650;
+}
+table.grid2 tr:last-child td { border-bottom: 0; }
+table.grid2 tbody tr { transition: background .2s var(--ease); }
+table.grid2 tbody tr:hover { background: rgba(255,255,255,.028); }
+
+.badge {
+  display: inline-block; padding: 3px 11px; border-radius: 999px;
+  font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+}
+.badge.new       { background: rgba(91,140,255,.17);  color: #8fb0ff; }
+.badge.contacted { background: rgba(245,175,60,.15);  color: #f2b45c; }
+.badge.qualified { background: rgba(120,200,255,.15); color: #7fc9f5; }
+.badge.won       { background: rgba(60,210,140,.15);  color: #58d79b; }
+.badge.lost      { background: rgba(255,255,255,.07); color: var(--ink3); }
+
+.admin form { background: none; border: 0; padding: 0; }
+.admin form.inline { display: inline-flex; gap: 7px; align-items: center; }
+.admin form.inline select { width: auto; padding: 6px 10px; font-size: .84rem; }
+
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.spread {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 18px; flex-wrap: wrap; margin-bottom: 22px;
+}
+.err { color: #ff8095; }
+.ok { color: #58d79b; }
+.empty {
+  padding: 38px; text-align: center; color: var(--ink2);
+  background: var(--surface); border: 1px dashed var(--line-2);
+  border-radius: var(--radius);
+}
+.empty code { color: var(--ink); background: rgba(255,255,255,.07); padding: 2px 6px; border-radius: 5px; }
+
+.loginbox { max-width: 400px; margin: 90px auto; }
+.loginbox form, .loginbox .card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); padding: 30px; backdrop-filter: blur(16px);
+}
+
+details.editor {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 15px 20px; margin-bottom: 10px;
+  transition: border-color .25s var(--ease);
+}
+details.editor[open] { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+details.editor summary { cursor: pointer; font-weight: 620; list-style: none; }
+details.editor summary::-webkit-details-marker { display: none; }
+.hint { display: block; font-size: .8rem; color: var(--ink3); font-weight: 400; margin-top: 3px; }

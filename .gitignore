@@ -1,8 +1,27 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+
+# production build of the old static generator
+output/
+
+# env
+.env
+.env*.local
+.env*
+!.env.example
+
+# vercel
+.vercel
+.vercel/
+
+# python (build_config.py)
 __pycache__/
 *.py[cod]
-.env
-.env.*
-!.env.example
-.vercel/
-.vercel
-.env*
+
+# misc
+*.tsbuildinfo
