@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { GlowGrid, Reveal } from "@/components/Motion";
 import { getBrand, getBrands } from "@/lib/data";
 import { brandCombos, comboSlug, usesNiche } from "@/lib/data/combos";
+import { brandUrl } from "@/lib/site";
 
 export const revalidate = 3600;
 
@@ -22,8 +23,8 @@ export async function generateMetadata({
   return {
     title,
     description: `${brand.tagline}. ${brand.services.length} services across ${brand.cities.length} locations.`,
-    alternates: { canonical: `${brand.domain}/` },
-    openGraph: { title, url: `${brand.domain}/` },
+    alternates: { canonical: brandUrl(brand.key) },
+    openGraph: { title, url: brandUrl(brand.key) },
   };
 }
 

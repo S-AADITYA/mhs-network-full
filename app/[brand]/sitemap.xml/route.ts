@@ -1,5 +1,6 @@
 import { getBrand, getBrands } from "@/lib/data";
 import { brandCombos } from "@/lib/data/combos";
+import { brandUrl, pageUrl, sectionUrl } from "@/lib/site";
 
 export const revalidate = 3600;
 
@@ -7,7 +8,10 @@ export async function generateStaticParams() {
   return (await getBrands()).map((b) => ({ brand: b.key }));
 }
 
-/** Per-brand sitemap using the brand's own domain, as the old generator did. */
+/**
+ * Per-brand sitemap. URLs use SITE_URL, matching the canonical on each page —
+ * a sitemap that disagrees with the canonical is ignored by Google.
+ */
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ brand: string }> },
@@ -18,10 +22,10 @@ export async function GET(
 
   const today = new Date().toISOString().slice(0, 10);
   const urls = [
-    `${brand.domain}/`,
-    `${brand.domain}/services/`,
-    `${brand.domain}/cities/`,
-    ...brandCombos(brand).map((c) => `${brand.domain}/${c.slug}/`),
+    brandUrl(brand.key),
+    sectionUrl(brand.key, "services"),
+    sectionUrl(brand.key, "cities"),
+    ...brandCombos(brand).map((c) => pageUrl(brand.key, c.slug)),
   ];
 
   const body = [
@@ -32,6 +36,9 @@ export async function GET(
   ].join("\n");
 
   return new Response(body, {
-    headers: { "content-type": "application/xml; charset=utf-8" },
+    headers: {
+      "content-type": "application/xml; charset=utf-8",
+      "cache-control": "public, max-age=0, s-maxage=3600",
+    },
   });
 }

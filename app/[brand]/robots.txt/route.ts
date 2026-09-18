@@ -1,4 +1,5 @@
 import { getBrand, getBrands } from "@/lib/data";
+import { SITE_URL } from "@/lib/site";
 
 export const revalidate = 3600;
 
@@ -14,7 +15,7 @@ export async function GET(
   const brand = await getBrand(key);
   if (!brand) return new Response("Not found", { status: 404 });
 
-  const body = `User-agent: *\nAllow: /\nDisallow: /admin/\nSitemap: ${brand.domain}/sitemap.xml\n`;
+  const body = `User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\nSitemap: ${SITE_URL}/${brand.key}/sitemap.xml\n`;
   return new Response(body, {
     headers: { "content-type": "text/plain; charset=utf-8" },
   });

@@ -6,6 +6,7 @@ import { GlowGrid, Reveal } from "@/components/Motion";
 import { getBrand, getBrands } from "@/lib/data";
 import { brandCombos, comboSlug, findCombo, usesNiche } from "@/lib/data/combos";
 import { cityContext } from "@/lib/data/city-context";
+import { pageUrl } from "@/lib/site";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -45,7 +46,7 @@ export async function generateMetadata({
 
   const title = `${service.name}${niche ? ` for ${niche.name}` : ""} in ${city.name} | ${brand.name}`;
   const description = describe(service, city, niche ? ` ${niche.line}` : "");
-  const url = `${brand.domain}/${slug}/`;
+  const url = pageUrl(brand.key, slug);
 
   return {
     title,
@@ -66,7 +67,7 @@ export default async function ComboPage({
 
   const { brand, service, city, niche } = combo;
   const nichePart = niche ? ` for ${niche.name}` : "";
-  const url = `${brand.domain}/${slug}/`;
+  const url = pageUrl(brand.key, slug);
   const description = describe(service, city, niche ? ` ${niche.line}` : "");
 
   const serviceLd = {

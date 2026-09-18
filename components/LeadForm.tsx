@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { trackLead } from "@/lib/track";
 
 interface Props {
   brand: string;
@@ -40,6 +41,7 @@ export default function LeadForm({ brand, service, city, sourceUrl }: Props) {
         const body = await res.json().catch(() => ({ error: "" }));
         throw new Error(body.error || "Could not send that. Please call us instead.");
       }
+      trackLead({ brand, service, city });
       form.reset();
       setState("done");
     } catch (err) {

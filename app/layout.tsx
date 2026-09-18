@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
+import Tags from "@/components/Tags";
 import { getNetwork } from "@/lib/data";
 
 const sans = Inter({
@@ -34,7 +35,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { ga4_id } = await getNetwork();
   return (
     <html lang="en" className={`${sans.variable} ${display.variable}`}>
       <head>
@@ -49,19 +49,7 @@ export default async function RootLayout({
       </head>
       <body>
         {children}
-        {ga4_id ? (
-          <>
-            <script
-              async
-              src={`https://www.googletagmanager.com/gtag/js?id=${ga4_id}`}
-            />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","${ga4_id}");`,
-              }}
-            />
-          </>
-        ) : null}
+        <Tags />
       </body>
     </html>
   );

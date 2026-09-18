@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { GlowGrid, Reveal } from "@/components/Motion";
 import { getBrand, getBrands } from "@/lib/data";
 import { comboSlug, usesNiche } from "@/lib/data/combos";
+import { sectionUrl } from "@/lib/site";
 
 export const revalidate = 3600;
 
@@ -21,7 +22,7 @@ export async function generateMetadata({
   return {
     title: `Locations | ${brand.name}`,
     description: `Every location ${brand.name} serves, with a page for each service.`,
-    alternates: { canonical: `${brand.domain}/cities/` },
+    alternates: { canonical: sectionUrl(brand.key, "cities") },
   };
 }
 
